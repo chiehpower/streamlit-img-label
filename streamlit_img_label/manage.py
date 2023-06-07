@@ -2,36 +2,23 @@ import os
 import re
 import numpy as np
 from PIL import Image
-from .annotation import output_xml, read_xml
-
-"""
-.. module:: streamlit_img_label
-   :synopsis: manage.
-.. moduleauthor:: Tianning Li <ltianningli@gmail.com>
-"""
-
+from .annotation import read_json, output_json
 
 class ImageManager:
-    """ImageManager
-    Manage the image object.
 
-    Args:
-        filename(str): the image file.
-    """
-
-    def __init__(self, filename):
+    def __init__(self, img, filename):
         """initiate module"""
         self._filename = filename
-        self._img = Image.open(filename)
+        self._img = Image.open(img)
         self._rects = []
         self._load_rects()
         self._resized_ratio_w = 1
         self._resized_ratio_h = 1
 
     def _load_rects(self):
-        rects_xml = read_xml(self._filename)
-        if rects_xml:
-            self._rects = rects_xml
+        rects_json = read_json(self._filename)
+        if rects_json:
+            self._rects = rects_json
 
     def get_img(self):
         """get the image object
@@ -137,50 +124,5 @@ class ImageManager:
 
     def save_annotation(self):
         """output the xml annotation file."""
-        output_xml(self._filename, self._img, self._current_rects)
-
-
-class ImageDirManager:
-    def __init__(self, dir_name):
-        self._dir_name = dir_name
-        self._files = []
-        self._annotations_files = []
-
-    def get_all_files(self, allow_types=["png", "jpg", "jpeg"]):
-        allow_types += [i.upper() for i in allow_types]
-        mask = ".*\.[" + "|".join(allow_types) + "]"
-        self._files = [
-            file for file in os.listdir(self._dir_name) if re.match(mask, file)
-        ]
-        return self._files
-
-    def get_exist_annotation_files(self):
-        self._annotations_files = [
-            file for file in os.listdir(self._dir_name) if re.match(".*.xml", file)
-        ]
-        return self._annotations_files
-
-    def set_all_files(self, files):
-        self._files = files
-
-    def set_annotation_files(self, files):
-        self._annotations_files = files
-
-    def get_image(self, index):
-        return self._files[index]
-
-    def _get_next_image_helper(self, index):
-        while index < len(self._files) - 1:
-            index += 1
-            image_file = self._files[index]
-            image_file_name = image_file.split(".")[0]
-            if f"{image_file_name}.xml" not in self._annotations_files:
-                return index
-        return None
-
-    def get_next_annotation_image(self, index):
-        image_index = self._get_next_image_helper(index)
-        if image_index:
-            return image_index
-        if not image_index and len(self._files) != len(self._annotations_files):
-            return self._get_next_image_helper(0)
+        # output_xml(self._filename, self._img, self._current_rects)
+        output_json(self._filename, self._img, self._current_rects)

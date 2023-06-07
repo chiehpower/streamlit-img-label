@@ -1,0 +1,1 @@
+{"images": [{"id": 1, "width": 6240, "height": 4160, "file_name": "andrew-s-ouo1hbizWwo-unsplash.jpg"}], "annotations": [{"id": 1, "image_id": 1, "category_id": 1, "bbox": [900, 293, 1943, 1804], "segmentation": [], "area": -1, "iscrowd": 0}], "categories": [{"id": 1, "name": "", "supercategory": "animal"}]}

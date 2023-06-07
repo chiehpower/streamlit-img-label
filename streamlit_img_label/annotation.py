@@ -1,65 +1,87 @@
 import os
-from pascal_voc_writer import Writer
-from xml.etree import ElementTree as ET
+from pycocotools.coco import COCO
+import json
 
-"""
-.. module:: streamlit_img_label
-   :synopsis: annotation.
-.. moduleauthor:: Tianning Li <ltianningli@gmail.com>
-"""
-
-
-def read_xml(img_file):
-    """read_xml
-    Read the xml annotation file and extract the bounding boxes if exists.
-
-    Args:
-        img_file(str): the image file.
-    Returns:
-        rects(list): the bounding boxes of the image.
-    """
-    file_name = img_file.split(".")[0]
-    if not os.path.isfile(f"{file_name}.xml"):
+def read_json(img_file):
+    file_name = img_file.split(".")[0] + '.json'
+    if not os.path.isfile(file_name):
         return []
-    tree = ET.parse(f"{file_name}.xml")
-    root = tree.getroot()
+    print(f"Load the json file: {file_name}")
+    with open(file_name, 'r') as f:
+        file_info = json.load(f)
 
     rects = []
 
-    for boxes in root.iter("object"):
-        label = boxes.find("name").text
-        ymin = int(boxes.find("bndbox/ymin").text)
-        xmin = int(boxes.find("bndbox/xmin").text)
-        ymax = int(boxes.find("bndbox/ymax").text)
-        xmax = int(boxes.find("bndbox/xmax").text)
+    label = file_info['categories'][0]['name']
+    obj_info = file_info['annotations']
+    for obj in obj_info:    
+        bbox = obj['bbox']
+        x = int(bbox[0])
+        y = int(bbox[1])
+        w = int(bbox[2])
+        h = int(bbox[3])
         rects.append(
             {
-                "left": xmin,
-                "top": ymin,
-                "width": xmax - xmin,
-                "height": ymax - ymin,
+                "left": x,
+                "top": y,
+                "width": w,
+                "height": h,
                 "label": label,
             }
         )
     return rects
 
 
-def output_xml(img_file, img, rects):
-    """output_xml
-    Output the xml image annotation file
+def output_json(img_file, img, rects):
+    coco = COCO()
+    width, height = img.size
 
-    Args:
-        img_file(str): the image file.
-        img(PIL.Image): the image object.
-        rects(list): the bounding boxes of the image.
-    """
-    file_name = img_file.split(".")[0]
-    writer = Writer(img_file, img.width, img.height)
+    # add the info of the image
+    image_info = {
+        'id': 1,
+        'width': width,
+        'height': height,
+        'file_name': img_file
+    }
+
+    category_info = {
+    'id': 1,
+    'name': '',
+    'supercategory': 'animal'
+    }
+    
+    coco.dataset = {
+        'images': [],
+        'annotations': [],
+        'categories': []
+    }
+    coco.createIndex()
+    coco.dataset['images'].append(image_info)
+    coco.dataset['categories'].append(category_info)  
+
+    # add the annotation info
+    number = 1
     for box in rects:
         xmin = box["left"]
         ymin = box["top"]
-        xmax = box["left"] + box["width"]
-        ymax = box["top"] + box["height"]
+        # xmax = box["left"] + box["width"]
+        # ymax = box["top"] + box["height"]
+        
+        box_info = {
+        'id': number,
+        'image_id': 1,
+        'category_id': 1,
+        'bbox': [xmin, ymin, box["width"], box["height"]],  # [x, y, width, height]
+        'segmentation': [],
+        'area': -1,  
+        'iscrowd': 0,  
+        }
+        coco.dataset['annotations'].append(box_info)
+        number += 1
 
-        writer.addObject(box["label"], xmin, ymin, xmax, ymax)
-    writer.save(f"{file_name}.xml")
+    # write into COCO file
+    output_file = img_file.split(".")[0] + '.json'
+    print(output_file)
+
+    with open(output_file, 'w') as f:
+        json.dump(coco.dataset, f)

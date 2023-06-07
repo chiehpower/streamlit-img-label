@@ -1,14 +1,10 @@
-# Streamlit Image Labelling - Blog post
+# Streamlit Image Labelling - COCO Format
 
-streamlit-img-label is a graphical image annotation tool using streamlit. Annotations are saved as XML files in PASCAL VOC format.
+streamlit-img-label is a graphical image annotation tool using streamlit. 
 
-## Installation
+Annotations are saved as JSON files in COCO Dataset format.
 
-In your python virtual environment, run:
-
-```sh
-pip install streamlit-img-label
-```
+**The biggest different is that we upload the image via streamlit NOT loading the images from the local dir. Use the image from users then save it into a json file.**
 
 ## Example
 ```sh
@@ -16,12 +12,9 @@ streamlit run app.py
 ```
 
 ## Demo
-![Demo](asset/st_img_label.gif)
+![Demo](asset/1.png)
 
 ## Reference
 
 - [streamlit-cropper](https://github.com/turner-anderson/streamlit-cropper)
-
-## Donation
-
-If you think this project is cool, please consider [buying me a coffee](https://www.paypal.com/paypalme/TIANNINGL/)
+- [streamlit-img-label](https://github.com/lit26/streamlit-img-label)

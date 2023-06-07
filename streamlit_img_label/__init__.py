@@ -1,7 +1,7 @@
 import os
 import streamlit.components.v1 as components
 import numpy as np
-from .manage import ImageManager, ImageDirManager
+from .manage import ImageManager
 
 _RELEASE = True
 
